@@ -1,0 +1,8 @@
+group: io.kestra.plugin.oci.ons
+name: "ons"
+title: "OCI Notifications (ONS)"
+description: "Tasks for Oracle Cloud Infrastructure Notification Service (ONS)"
+body: ""
+videos: []
+createdBy: "Kestra Core Team"
+managedBy: "Kestra Core Team"
