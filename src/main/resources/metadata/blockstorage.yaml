@@ -1,0 +1,8 @@
+group: io.kestra.plugin.oci.blockstorage
+name: "blockstorage"
+title: "OCI Block Storage"
+description: "Tasks for Oracle Cloud Infrastructure Block Volume and Backup service"
+body: ""
+videos: []
+createdBy: "Kestra Core Team"
+managedBy: "Kestra Core Team"
