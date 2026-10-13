@@ -1,0 +1,8 @@
+group: io.kestra.plugin.oci.compute
+name: "compute"
+title: "OCI Compute"
+description: "Tasks for Oracle Cloud Infrastructure (OCI) Compute instances and lifecycle"
+body: ""
+videos: []
+createdBy: "Kestra Core Team"
+managedBy: "Kestra Core Team"

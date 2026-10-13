@@ -49,6 +49,11 @@ dependencies {
     annotationProcessor group: "io.kestra", name: "processor", version: kestraVersion
     compileOnly group: "io.kestra", name: "core", version: kestraVersion
     compileOnly group: "io.kestra", name: "script", version: kestraVersion
+
+    // OCI Java SDK BOM & Core (Compute) & Common
+    implementation platform("com.oracle.oci.sdk:oci-java-sdk-bom:3.87.0")
+    implementation "com.oracle.oci.sdk:oci-java-sdk-core"
+    implementation "com.oracle.oci.sdk:oci-java-sdk-common"
 }
 
 
@@ -87,6 +92,8 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
     testImplementation "org.hamcrest:hamcrest"
     testImplementation "org.hamcrest:hamcrest-library"
+    testImplementation "org.mockito:mockito-core:5.11.0"
+    testImplementation "org.mockito:mockito-junit-jupiter:5.11.0"
 }
 
 /**********************************************************************************************************************\
