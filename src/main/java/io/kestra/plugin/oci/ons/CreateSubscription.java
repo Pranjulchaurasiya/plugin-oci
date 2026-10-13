@@ -57,18 +57,22 @@ import java.time.Instant;
 public class CreateSubscription extends AbstractOciTask implements RunnableTask<CreateSubscription.Output> {
     @Schema(title = "The OCID of the topic to subscribe to")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> topicId;
 
     @Schema(title = "The OCID of the compartment")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> compartmentId;
 
     @Schema(title = "The delivery protocol (e.g. 'EMAIL', 'HTTPS', 'SLACK', 'PAGERDUTY', 'ORACLE_FUNCTIONS')")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> protocol;
 
     @Schema(title = "The subscription endpoint (e.g. email address or HTTPS URL)")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main", secret = true)
     private Property<String> endpoint;
 
     @Override
@@ -83,7 +87,7 @@ public class CreateSubscription extends AbstractOciTask implements RunnableTask<
 
         logger.debug("Creating OCI ONS subscription for topic {} with protocol {}", rTopicId, rProtocol);
 
-        try (NotificationDataPlaneClient client = NotificationDataPlaneClient.builder().build(authProvider)) {
+        try (NotificationDataPlaneClient client = this.createDataPlaneClient(authProvider)) {
             CreateSubscriptionDetails details = CreateSubscriptionDetails.builder()
                 .topicId(rTopicId)
                 .compartmentId(rCompartmentId)
@@ -107,7 +111,6 @@ public class CreateSubscription extends AbstractOciTask implements RunnableTask<
                 .subscriptionId(subId)
                 .topicId(rTopicId)
                 .protocol(rProtocol)
-                .endpoint(rEndpoint)
                 .lifecycleState(state)
                 .build();
         }
@@ -124,9 +127,6 @@ public class CreateSubscription extends AbstractOciTask implements RunnableTask<
 
         @Schema(title = "The protocol used")
         private final String protocol;
-
-        @Schema(title = "The endpoint subscribed")
-        private final String endpoint;
 
         @Schema(title = "The lifecycle state of the subscription (e.g. ACTIVE, PENDING)")
         private final String lifecycleState;

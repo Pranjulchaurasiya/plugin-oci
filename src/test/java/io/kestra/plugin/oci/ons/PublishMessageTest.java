@@ -56,6 +56,45 @@ class PublishMessageTest {
     }
 
     @Test
+    void testRunWithMockClient() throws Exception {
+        RunContext runContext = runContextFactory.of(Map.of(
+            "testTopic", "ocid1.onstopic.oc1.fra.sampletopic",
+            "testTitle", "Critical Alert",
+            "testBody", "Service latency spiked above 500ms"
+        ));
+
+        com.oracle.bmc.ons.NotificationDataPlaneClient mockClient = org.mockito.Mockito.mock(com.oracle.bmc.ons.NotificationDataPlaneClient.class);
+        com.oracle.bmc.ons.responses.PublishMessageResponse mockResponse = com.oracle.bmc.ons.responses.PublishMessageResponse.builder()
+            .publishResult(com.oracle.bmc.ons.model.PublishResult.builder()
+                .messageId("msg-123456")
+                .timeStamp(java.util.Date.from(Instant.parse("2026-10-13T12:00:00Z")))
+                .build())
+            .build();
+
+        org.mockito.Mockito.when(mockClient.publishMessage(org.mockito.ArgumentMatchers.any(com.oracle.bmc.ons.requests.PublishMessageRequest.class)))
+            .thenReturn(mockResponse);
+
+        PublishMessage task = PublishMessage.builder()
+            .customDataPlaneClient(mockClient)
+            .topicId(Property.ofExpression("{{ testTopic }}"))
+            .title(Property.ofExpression("{{ testTitle }}"))
+            .body(Property.ofExpression("{{ testBody }}"))
+            .build();
+
+        PublishMessage.Output output = task.run(runContext);
+
+        assertThat(output, notNullValue());
+        assertThat(output.getMessageId(), is("msg-123456"));
+        assertThat(output.getTimestamp(), is(Instant.parse("2026-10-13T12:00:00Z")));
+
+        org.mockito.Mockito.verify(mockClient).publishMessage(org.mockito.ArgumentMatchers.argThat(req ->
+            req.getTopicId().equals("ocid1.onstopic.oc1.fra.sampletopic") &&
+            req.getMessageDetails().getTitle().equals("Critical Alert") &&
+            req.getMessageDetails().getBody().equals("Service latency spiked above 500ms")
+        ));
+    }
+
+    @Test
     void testMissingCredentialsThrows() {
         RunContext runContext = runContextFactory.of();
 
@@ -67,3 +106,4 @@ class PublishMessageTest {
         assertThrows(Exception.class, () -> task.run(runContext));
     }
 }
+

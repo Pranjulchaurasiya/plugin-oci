@@ -55,13 +55,16 @@ import java.time.Instant;
 public class PublishMessage extends AbstractOciTask implements RunnableTask<PublishMessage.Output> {
     @Schema(title = "The OCID of the topic to publish to")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> topicId;
 
     @Schema(title = "The title / subject of the message")
+    @io.kestra.core.models.annotations.PluginProperty(group = "advanced")
     private Property<String> title;
 
     @Schema(title = "The body of the message")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> body;
 
     @Override
@@ -75,7 +78,7 @@ public class PublishMessage extends AbstractOciTask implements RunnableTask<Publ
 
         logger.debug("Publishing message to OCI ONS topic: {}", rTopicId);
 
-        try (NotificationDataPlaneClient client = NotificationDataPlaneClient.builder().build(authProvider)) {
+        try (NotificationDataPlaneClient client = this.createDataPlaneClient(authProvider)) {
             MessageDetails.Builder messageDetailsBuilder = MessageDetails.builder()
                 .body(rBody);
 

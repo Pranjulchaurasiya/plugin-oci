@@ -59,7 +59,12 @@ import java.util.List;
 public class ListTopics extends AbstractOciTask implements RunnableTask<ListTopics.Output> {
     @Schema(title = "The OCID of the compartment to list topics from")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> compartmentId;
+
+    @Schema(title = "Maximum number of topics to retrieve")
+    @io.kestra.core.models.annotations.PluginProperty(group = "advanced")
+    private Property<Integer> limit;
 
     @Override
     public Output run(RunContext runContext) throws Exception {
@@ -67,29 +72,47 @@ public class ListTopics extends AbstractOciTask implements RunnableTask<ListTopi
         AuthenticationDetailsProvider authProvider = this.getAuthenticationDetailsProvider(runContext);
 
         String rCompartmentId = runContext.render(this.compartmentId).as(String.class).orElseThrow();
+        Integer rLimit = this.limit != null ? runContext.render(this.limit).as(Integer.class).orElse(null) : null;
 
         logger.debug("Listing OCI ONS topics in compartment {}", rCompartmentId);
 
-        try (NotificationControlPlaneClient client = NotificationControlPlaneClient.builder().build(authProvider)) {
-            ListTopicsRequest request = ListTopicsRequest.builder()
-                .compartmentId(rCompartmentId)
-                .build();
+        List<TopicSummary> topics = new ArrayList<>();
+        String page = null;
 
-            ListTopicsResponse response = client.listTopics(request);
-            List<TopicSummary> topics = new ArrayList<>();
+        try (NotificationControlPlaneClient client = this.createControlPlaneClient(authProvider)) {
+            do {
+                ListTopicsRequest.Builder requestBuilder = ListTopicsRequest.builder()
+                    .compartmentId(rCompartmentId);
 
-            if (response.getItems() != null) {
-                for (NotificationTopicSummary summary : response.getItems()) {
-                    topics.add(TopicSummary.builder()
-                        .topicId(summary.getTopicId())
-                        .name(summary.getName())
-                        .compartmentId(summary.getCompartmentId())
-                        .description(summary.getDescription())
-                        .lifecycleState(summary.getLifecycleState() != null ? summary.getLifecycleState().getValue() : null)
-                        .timeCreated(summary.getTimeCreated() != null ? summary.getTimeCreated().toInstant() : null)
-                        .build());
+                if (page != null) {
+                    requestBuilder.page(page);
                 }
-            }
+
+                ListTopicsResponse response = client.listTopics(requestBuilder.build());
+
+                if (response.getItems() != null) {
+                    for (NotificationTopicSummary summary : response.getItems()) {
+                        topics.add(TopicSummary.builder()
+                            .topicId(summary.getTopicId())
+                            .name(summary.getName())
+                            .compartmentId(summary.getCompartmentId())
+                            .description(summary.getDescription())
+                            .lifecycleState(summary.getLifecycleState() != null ? summary.getLifecycleState().getValue() : null)
+                            .timeCreated(summary.getTimeCreated() != null ? summary.getTimeCreated().toInstant() : null)
+                            .build());
+
+                        if (rLimit != null && topics.size() >= rLimit) {
+                            break;
+                        }
+                    }
+                }
+
+                if (rLimit != null && topics.size() >= rLimit) {
+                    break;
+                }
+
+                page = response.getOpcNextPage();
+            } while (page != null && !page.isBlank());
 
             logger.info("Found {} OCI ONS topics in compartment {}", topics.size(), rCompartmentId);
 

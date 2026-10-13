@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 public class DeleteTopic extends AbstractOciTask implements RunnableTask<DeleteTopic.Output> {
     @Schema(title = "The OCID of the topic to delete")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> topicId;
 
     @Override
@@ -61,7 +62,7 @@ public class DeleteTopic extends AbstractOciTask implements RunnableTask<DeleteT
 
         logger.debug("Deleting OCI ONS topic {}", rTopicId);
 
-        try (NotificationControlPlaneClient client = NotificationControlPlaneClient.builder().build(authProvider)) {
+        try (NotificationControlPlaneClient client = this.createControlPlaneClient(authProvider)) {
             DeleteTopicRequest request = DeleteTopicRequest.builder()
                 .topicId(rTopicId)
                 .build();

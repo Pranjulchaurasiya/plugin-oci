@@ -4,7 +4,10 @@ import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.SimpleAuthenticationDetailsProvider;
 import com.oracle.bmc.auth.StringPrivateKeySupplier;
+import com.oracle.bmc.ons.NotificationControlPlaneClient;
+import com.oracle.bmc.ons.NotificationDataPlaneClient;
 import io.kestra.core.exceptions.IllegalVariableEvaluationException;
+import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.Task;
 import io.kestra.core.runners.RunContext;
@@ -21,30 +24,54 @@ import lombok.experimental.SuperBuilder;
 public abstract class AbstractOciTask extends Task {
     @Schema(title = "The OCI region identifier (e.g. 'eu-frankfurt-1', 'us-ashburn-1')")
     @NotNull
+    @PluginProperty(group = "connection")
     protected Property<String> region;
 
     @Schema(title = "The OCID of the tenancy")
     @NotNull
+    @PluginProperty(group = "connection")
     protected Property<String> tenancyOcid;
 
     @Schema(title = "The OCID of the calling user")
     @NotNull
+    @PluginProperty(group = "connection")
     protected Property<String> userId;
 
     @Schema(title = "Fingerprint for the key pair being used")
     @NotNull
+    @PluginProperty(group = "connection")
     protected Property<String> fingerprint;
 
     @Schema(title = "The private key in PEM format (or private key content)")
     @NotNull
-    @io.kestra.core.models.annotations.PluginProperty(group = "connection", secret = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @PluginProperty(group = "connection", secret = true)
     protected Property<String> privateKey;
 
     @Schema(title = "Passphrase used to decrypt the private key, if encrypted")
-    @io.kestra.core.models.annotations.PluginProperty(group = "connection", secret = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @PluginProperty(group = "advanced", secret = true)
     protected Property<String> passphrase;
 
+    @Schema(hidden = true)
+    protected transient NotificationDataPlaneClient customDataPlaneClient;
+
+    @Schema(hidden = true)
+    protected transient NotificationControlPlaneClient customControlPlaneClient;
+
     protected AuthenticationDetailsProvider getAuthenticationDetailsProvider(RunContext runContext) throws IllegalVariableEvaluationException {
+        if ((customDataPlaneClient != null || customControlPlaneClient != null) && this.tenancyOcid == null) {
+            return SimpleAuthenticationDetailsProvider.builder()
+                .tenantId("dummy")
+                .userId("dummy")
+                .fingerprint("dummy")
+                .privateKeySupplier(new StringPrivateKeySupplier("dummy"))
+                .region(Region.EU_FRANKFURT_1)
+                .build();
+        }
+
         String rTenancy = runContext.render(this.tenancyOcid).as(String.class).orElseThrow();
         String rUser = runContext.render(this.userId).as(String.class).orElseThrow();
         String rFingerprint = runContext.render(this.fingerprint).as(String.class).orElseThrow();
@@ -65,4 +92,13 @@ public abstract class AbstractOciTask extends Task {
 
         return builder.build();
     }
+
+    protected NotificationDataPlaneClient createDataPlaneClient(AuthenticationDetailsProvider authProvider) {
+        return customDataPlaneClient != null ? customDataPlaneClient : NotificationDataPlaneClient.builder().build(authProvider);
+    }
+
+    protected NotificationControlPlaneClient createControlPlaneClient(AuthenticationDetailsProvider authProvider) {
+        return customControlPlaneClient != null ? customControlPlaneClient : NotificationControlPlaneClient.builder().build(authProvider);
+    }
 }
+

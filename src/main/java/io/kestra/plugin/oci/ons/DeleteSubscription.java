@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 public class DeleteSubscription extends AbstractOciTask implements RunnableTask<DeleteSubscription.Output> {
     @Schema(title = "The OCID of the subscription to delete")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> subscriptionId;
 
     @Override
@@ -61,7 +62,7 @@ public class DeleteSubscription extends AbstractOciTask implements RunnableTask<
 
         logger.debug("Deleting OCI ONS subscription {}", rSubscriptionId);
 
-        try (NotificationDataPlaneClient client = NotificationDataPlaneClient.builder().build(authProvider)) {
+        try (NotificationDataPlaneClient client = this.createDataPlaneClient(authProvider)) {
             DeleteSubscriptionRequest request = DeleteSubscriptionRequest.builder()
                 .subscriptionId(rSubscriptionId)
                 .build();

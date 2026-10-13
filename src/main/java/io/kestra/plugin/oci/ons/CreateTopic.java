@@ -56,13 +56,16 @@ import java.time.Instant;
 public class CreateTopic extends AbstractOciTask implements RunnableTask<CreateTopic.Output> {
     @Schema(title = "The OCID of the compartment where the topic will be created")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> compartmentId;
 
     @Schema(title = "The name of the topic to create")
     @NotNull
+    @io.kestra.core.models.annotations.PluginProperty(group = "main")
     private Property<String> name;
 
     @Schema(title = "Optional description for the topic")
+    @io.kestra.core.models.annotations.PluginProperty(group = "advanced")
     private Property<String> topicDescription;
 
     @Override
@@ -76,7 +79,7 @@ public class CreateTopic extends AbstractOciTask implements RunnableTask<CreateT
 
         logger.debug("Creating OCI ONS topic '{}' in compartment {}", rName, rCompartmentId);
 
-        try (NotificationControlPlaneClient client = NotificationControlPlaneClient.builder().build(authProvider)) {
+        try (NotificationControlPlaneClient client = this.createControlPlaneClient(authProvider)) {
             CreateTopicDetails.Builder detailsBuilder = CreateTopicDetails.builder()
                 .compartmentId(rCompartmentId)
                 .name(rName);
