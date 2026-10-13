@@ -1,0 +1,8 @@
+group: io.kestra.plugin.oci.functions
+name: "functions"
+title: "OCI Functions"
+description: "Tasks for Oracle Cloud Infrastructure Functions serverless service"
+body: ""
+videos: []
+createdBy: "Kestra Core Team"
+managedBy: "Kestra Core Team"
