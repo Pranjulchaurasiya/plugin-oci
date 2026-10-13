@@ -1,0 +1,8 @@
+group: io.kestra.plugin.oci.objectstorage
+name: "objectstorage"
+title: "OCI Object Storage"
+description: "Tasks for Oracle Cloud Infrastructure Object Storage service"
+body: ""
+videos: []
+createdBy: "Kestra Core Team"
+managedBy: "Kestra Core Team"

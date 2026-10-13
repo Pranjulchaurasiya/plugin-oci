@@ -50,10 +50,11 @@ dependencies {
     compileOnly group: "io.kestra", name: "core", version: kestraVersion
     compileOnly group: "io.kestra", name: "script", version: kestraVersion
 
-    // OCI Java SDK BOM & Notifications (ONS) & Functions
+    // OCI Java SDK BOM & Notifications (ONS) & Functions & Object Storage
     implementation platform("com.oracle.oci.sdk:oci-java-sdk-bom:3.87.0")
     implementation "com.oracle.oci.sdk:oci-java-sdk-ons"
     implementation "com.oracle.oci.sdk:oci-java-sdk-functions"
+    implementation "com.oracle.oci.sdk:oci-java-sdk-objectstorage"
     implementation "com.oracle.oci.sdk:oci-java-sdk-common"
 }
 
