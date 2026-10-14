@@ -74,8 +74,8 @@ class PublishMessageTest {
         org.mockito.Mockito.when(mockClient.publishMessage(org.mockito.ArgumentMatchers.any(com.oracle.bmc.ons.requests.PublishMessageRequest.class)))
             .thenReturn(mockResponse);
 
-        PublishMessage task = PublishMessage.builder()
-            .customDataPlaneClient(mockClient)
+        PublishMessage task = TestPublishMessage.builder()
+            .mockClient(mockClient)
             .topicId(Property.ofExpression("{{ testTopic }}"))
             .title(Property.ofExpression("{{ testTitle }}"))
             .body(Property.ofExpression("{{ testBody }}"))
@@ -104,6 +104,17 @@ class PublishMessageTest {
             .build();
 
         assertThrows(Exception.class, () -> task.run(runContext));
+    }
+
+    @lombok.experimental.SuperBuilder
+    @lombok.NoArgsConstructor
+    public static class TestPublishMessage extends PublishMessage {
+        private com.oracle.bmc.ons.NotificationDataPlaneClient mockClient;
+
+        @Override
+        protected com.oracle.bmc.ons.NotificationDataPlaneClient createDataPlaneClient(RunContext runContext) {
+            return mockClient;
+        }
     }
 }
 

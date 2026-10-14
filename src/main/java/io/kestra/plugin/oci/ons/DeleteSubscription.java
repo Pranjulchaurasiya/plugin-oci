@@ -56,13 +56,12 @@ public class DeleteSubscription extends AbstractOciTask implements RunnableTask<
     @Override
     public Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
-        AuthenticationDetailsProvider authProvider = this.getAuthenticationDetailsProvider(runContext);
 
         String rSubscriptionId = runContext.render(this.subscriptionId).as(String.class).orElseThrow();
 
         logger.debug("Deleting OCI ONS subscription {}", rSubscriptionId);
 
-        try (NotificationDataPlaneClient client = this.createDataPlaneClient(authProvider)) {
+        try (NotificationDataPlaneClient client = this.createDataPlaneClient(runContext)) {
             DeleteSubscriptionRequest request = DeleteSubscriptionRequest.builder()
                 .subscriptionId(rSubscriptionId)
                 .build();

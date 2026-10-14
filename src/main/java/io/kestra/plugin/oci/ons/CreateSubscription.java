@@ -78,7 +78,6 @@ public class CreateSubscription extends AbstractOciTask implements RunnableTask<
     @Override
     public Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
-        AuthenticationDetailsProvider authProvider = this.getAuthenticationDetailsProvider(runContext);
 
         String rTopicId = runContext.render(this.topicId).as(String.class).orElseThrow();
         String rCompartmentId = runContext.render(this.compartmentId).as(String.class).orElseThrow();
@@ -87,7 +86,7 @@ public class CreateSubscription extends AbstractOciTask implements RunnableTask<
 
         logger.debug("Creating OCI ONS subscription for topic {} with protocol {}", rTopicId, rProtocol);
 
-        try (NotificationDataPlaneClient client = this.createDataPlaneClient(authProvider)) {
+        try (NotificationDataPlaneClient client = this.createDataPlaneClient(runContext)) {
             CreateSubscriptionDetails details = CreateSubscriptionDetails.builder()
                 .topicId(rTopicId)
                 .compartmentId(rCompartmentId)

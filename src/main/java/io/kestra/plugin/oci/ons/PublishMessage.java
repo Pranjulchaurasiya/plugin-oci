@@ -70,7 +70,6 @@ public class PublishMessage extends AbstractOciTask implements RunnableTask<Publ
     @Override
     public Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
-        AuthenticationDetailsProvider authProvider = this.getAuthenticationDetailsProvider(runContext);
 
         String rTopicId = runContext.render(this.topicId).as(String.class).orElseThrow();
         String rBody = runContext.render(this.body).as(String.class).orElseThrow();
@@ -78,7 +77,7 @@ public class PublishMessage extends AbstractOciTask implements RunnableTask<Publ
 
         logger.debug("Publishing message to OCI ONS topic: {}", rTopicId);
 
-        try (NotificationDataPlaneClient client = this.createDataPlaneClient(authProvider)) {
+        try (NotificationDataPlaneClient client = this.createDataPlaneClient(runContext)) {
             MessageDetails.Builder messageDetailsBuilder = MessageDetails.builder()
                 .body(rBody);
 

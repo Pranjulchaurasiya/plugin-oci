@@ -48,7 +48,7 @@ import java.time.Instant;
                     privateKey: "{{ secret('OCI_PRIVATE_KEY') }}"
                     compartmentId: "{{ secret('OCI_COMPARTMENT_OCID') }}"
                     name: "production-pipeline-alerts"
-                    description: "Alerts topic for mission-critical Kestra executions"
+                    topicDescription: "Alerts topic for mission-critical Kestra executions"
                 """
         )
     }
@@ -71,7 +71,6 @@ public class CreateTopic extends AbstractOciTask implements RunnableTask<CreateT
     @Override
     public Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
-        AuthenticationDetailsProvider authProvider = this.getAuthenticationDetailsProvider(runContext);
 
         String rCompartmentId = runContext.render(this.compartmentId).as(String.class).orElseThrow();
         String rName = runContext.render(this.name).as(String.class).orElseThrow();
@@ -79,7 +78,7 @@ public class CreateTopic extends AbstractOciTask implements RunnableTask<CreateT
 
         logger.debug("Creating OCI ONS topic '{}' in compartment {}", rName, rCompartmentId);
 
-        try (NotificationControlPlaneClient client = this.createControlPlaneClient(authProvider)) {
+        try (NotificationControlPlaneClient client = this.createControlPlaneClient(runContext)) {
             CreateTopicDetails.Builder detailsBuilder = CreateTopicDetails.builder()
                 .compartmentId(rCompartmentId)
                 .name(rName);

@@ -55,23 +55,7 @@ public abstract class AbstractOciTask extends Task {
     @PluginProperty(group = "advanced", secret = true)
     protected Property<String> passphrase;
 
-    @Schema(hidden = true)
-    protected transient NotificationDataPlaneClient customDataPlaneClient;
-
-    @Schema(hidden = true)
-    protected transient NotificationControlPlaneClient customControlPlaneClient;
-
     protected AuthenticationDetailsProvider getAuthenticationDetailsProvider(RunContext runContext) throws IllegalVariableEvaluationException {
-        if ((customDataPlaneClient != null || customControlPlaneClient != null) && this.tenancyOcid == null) {
-            return SimpleAuthenticationDetailsProvider.builder()
-                .tenantId("dummy")
-                .userId("dummy")
-                .fingerprint("dummy")
-                .privateKeySupplier(new StringPrivateKeySupplier("dummy"))
-                .region(Region.EU_FRANKFURT_1)
-                .build();
-        }
-
         String rTenancy = runContext.render(this.tenancyOcid).as(String.class).orElseThrow();
         String rUser = runContext.render(this.userId).as(String.class).orElseThrow();
         String rFingerprint = runContext.render(this.fingerprint).as(String.class).orElseThrow();
@@ -93,12 +77,12 @@ public abstract class AbstractOciTask extends Task {
         return builder.build();
     }
 
-    protected NotificationDataPlaneClient createDataPlaneClient(AuthenticationDetailsProvider authProvider) {
-        return customDataPlaneClient != null ? customDataPlaneClient : NotificationDataPlaneClient.builder().build(authProvider);
+    protected NotificationDataPlaneClient createDataPlaneClient(RunContext runContext) throws IllegalVariableEvaluationException {
+        return NotificationDataPlaneClient.builder().build(getAuthenticationDetailsProvider(runContext));
     }
 
-    protected NotificationControlPlaneClient createControlPlaneClient(AuthenticationDetailsProvider authProvider) {
-        return customControlPlaneClient != null ? customControlPlaneClient : NotificationControlPlaneClient.builder().build(authProvider);
+    protected NotificationControlPlaneClient createControlPlaneClient(RunContext runContext) throws IllegalVariableEvaluationException {
+        return NotificationControlPlaneClient.builder().build(getAuthenticationDetailsProvider(runContext));
     }
 }
 

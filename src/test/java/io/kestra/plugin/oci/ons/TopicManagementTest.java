@@ -104,8 +104,8 @@ class TopicManagementTest {
         org.mockito.Mockito.when(mockClient.createTopic(org.mockito.ArgumentMatchers.any(com.oracle.bmc.ons.requests.CreateTopicRequest.class)))
             .thenReturn(mockResponse);
 
-        CreateTopic task = CreateTopic.builder()
-            .customControlPlaneClient(mockClient)
+        CreateTopic task = TestCreateTopic.builder()
+            .mockClient(mockClient)
             .compartmentId(Property.of("ocid1.compartment.oc1..comp123"))
             .name(Property.of("alerts-topic"))
             .topicDescription(Property.of("Test Description"))
@@ -152,8 +152,8 @@ class TopicManagementTest {
         org.mockito.Mockito.when(mockClient.listTopics(org.mockito.ArgumentMatchers.argThat(req -> req != null && "page-2-token".equals(req.getPage()))))
             .thenReturn(page2);
 
-        ListTopics task = ListTopics.builder()
-            .customControlPlaneClient(mockClient)
+        ListTopics task = TestListTopics.builder()
+            .mockClient(mockClient)
             .compartmentId(Property.of("comp-1"))
             .build();
 
@@ -178,8 +178,8 @@ class TopicManagementTest {
         org.mockito.Mockito.when(mockClient.deleteTopic(org.mockito.ArgumentMatchers.any(com.oracle.bmc.ons.requests.DeleteTopicRequest.class)))
             .thenReturn(mockResponse);
 
-        DeleteTopic task = DeleteTopic.builder()
-            .customControlPlaneClient(mockClient)
+        DeleteTopic task = TestDeleteTopic.builder()
+            .mockClient(mockClient)
             .topicId(Property.of("topic-to-del"))
             .build();
 
@@ -204,8 +204,8 @@ class TopicManagementTest {
         org.mockito.Mockito.when(mockClient.createSubscription(org.mockito.ArgumentMatchers.any(com.oracle.bmc.ons.requests.CreateSubscriptionRequest.class)))
             .thenReturn(mockResponse);
 
-        CreateSubscription task = CreateSubscription.builder()
-            .customDataPlaneClient(mockClient)
+        CreateSubscription task = TestCreateSubscription.builder()
+            .mockClient(mockClient)
             .topicId(Property.of("topic-1"))
             .compartmentId(Property.of("comp-1"))
             .protocol(Property.of("HTTPS"))
@@ -217,6 +217,79 @@ class TopicManagementTest {
         assertThat(output.getSubscriptionId(), is("sub-12345"));
         assertThat(output.getProtocol(), is("HTTPS"));
         assertThat(output.getLifecycleState(), is("ACTIVE"));
+    }
+
+    @Test
+    void testDeleteSubscriptionRun() throws Exception {
+        RunContext runContext = runContextFactory.of();
+        com.oracle.bmc.ons.NotificationDataPlaneClient mockClient = org.mockito.Mockito.mock(com.oracle.bmc.ons.NotificationDataPlaneClient.class);
+
+        com.oracle.bmc.ons.responses.DeleteSubscriptionResponse mockResponse = com.oracle.bmc.ons.responses.DeleteSubscriptionResponse.builder()
+            .opcRequestId("req-del-sub-456")
+            .build();
+
+        org.mockito.Mockito.when(mockClient.deleteSubscription(org.mockito.ArgumentMatchers.any(com.oracle.bmc.ons.requests.DeleteSubscriptionRequest.class)))
+            .thenReturn(mockResponse);
+
+        DeleteSubscription task = TestDeleteSubscription.builder()
+            .mockClient(mockClient)
+            .subscriptionId(Property.of("sub-to-del"))
+            .build();
+
+        DeleteSubscription.Output output = task.run(runContext);
+
+        assertThat(output.getSubscriptionId(), is("sub-to-del"));
+        assertThat(output.getOpcRequestId(), is("req-del-sub-456"));
+    }
+
+    @lombok.experimental.SuperBuilder
+    @lombok.NoArgsConstructor
+    public static class TestCreateTopic extends CreateTopic {
+        private com.oracle.bmc.ons.NotificationControlPlaneClient mockClient;
+        @Override
+        protected com.oracle.bmc.ons.NotificationControlPlaneClient createControlPlaneClient(RunContext runContext) {
+            return mockClient;
+        }
+    }
+
+    @lombok.experimental.SuperBuilder
+    @lombok.NoArgsConstructor
+    public static class TestListTopics extends ListTopics {
+        private com.oracle.bmc.ons.NotificationControlPlaneClient mockClient;
+        @Override
+        protected com.oracle.bmc.ons.NotificationControlPlaneClient createControlPlaneClient(RunContext runContext) {
+            return mockClient;
+        }
+    }
+
+    @lombok.experimental.SuperBuilder
+    @lombok.NoArgsConstructor
+    public static class TestDeleteTopic extends DeleteTopic {
+        private com.oracle.bmc.ons.NotificationControlPlaneClient mockClient;
+        @Override
+        protected com.oracle.bmc.ons.NotificationControlPlaneClient createControlPlaneClient(RunContext runContext) {
+            return mockClient;
+        }
+    }
+
+    @lombok.experimental.SuperBuilder
+    @lombok.NoArgsConstructor
+    public static class TestCreateSubscription extends CreateSubscription {
+        private com.oracle.bmc.ons.NotificationDataPlaneClient mockClient;
+        @Override
+        protected com.oracle.bmc.ons.NotificationDataPlaneClient createDataPlaneClient(RunContext runContext) {
+            return mockClient;
+        }
+    }
+
+    @lombok.experimental.SuperBuilder
+    @lombok.NoArgsConstructor
+    public static class TestDeleteSubscription extends DeleteSubscription {
+        private com.oracle.bmc.ons.NotificationDataPlaneClient mockClient;
+        @Override
+        protected com.oracle.bmc.ons.NotificationDataPlaneClient createDataPlaneClient(RunContext runContext) {
+            return mockClient;
+        }
     }
 }
 

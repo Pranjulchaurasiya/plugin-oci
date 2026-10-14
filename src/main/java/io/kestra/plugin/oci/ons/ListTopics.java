@@ -69,7 +69,6 @@ public class ListTopics extends AbstractOciTask implements RunnableTask<ListTopi
     @Override
     public Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
-        AuthenticationDetailsProvider authProvider = this.getAuthenticationDetailsProvider(runContext);
 
         String rCompartmentId = runContext.render(this.compartmentId).as(String.class).orElseThrow();
         Integer rLimit = this.limit != null ? runContext.render(this.limit).as(Integer.class).orElse(null) : null;
@@ -79,7 +78,7 @@ public class ListTopics extends AbstractOciTask implements RunnableTask<ListTopi
         List<TopicSummary> topics = new ArrayList<>();
         String page = null;
 
-        try (NotificationControlPlaneClient client = this.createControlPlaneClient(authProvider)) {
+        try (NotificationControlPlaneClient client = this.createControlPlaneClient(runContext)) {
             do {
                 ListTopicsRequest.Builder requestBuilder = ListTopicsRequest.builder()
                     .compartmentId(rCompartmentId);

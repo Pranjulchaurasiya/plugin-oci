@@ -56,13 +56,12 @@ public class DeleteTopic extends AbstractOciTask implements RunnableTask<DeleteT
     @Override
     public Output run(RunContext runContext) throws Exception {
         Logger logger = runContext.logger();
-        AuthenticationDetailsProvider authProvider = this.getAuthenticationDetailsProvider(runContext);
 
         String rTopicId = runContext.render(this.topicId).as(String.class).orElseThrow();
 
         logger.debug("Deleting OCI ONS topic {}", rTopicId);
 
-        try (NotificationControlPlaneClient client = this.createControlPlaneClient(authProvider)) {
+        try (NotificationControlPlaneClient client = this.createControlPlaneClient(runContext)) {
             DeleteTopicRequest request = DeleteTopicRequest.builder()
                 .topicId(rTopicId)
                 .build();
