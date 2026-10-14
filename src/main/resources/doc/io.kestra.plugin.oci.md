@@ -1,16 +1,38 @@
-This is the Kestra plugin template. Use it as a starting point for building a new plugin.
+# Oracle Cloud Infrastructure (OCI) Notifications (ONS) Plugin
 
-## What this template ships
+The OCI Notifications plugin for Kestra lets workflows create and manage notification topics, configure subscriptions, and publish messages to Oracle Cloud Infrastructure (OCI) Notification Service (ONS).
 
-- `Example` is a sample `RunnableTask` that reverses an input string.
-- `Trigger` is a sample polling trigger that fires an execution at random.
+## Authentication
 
-## How to build your plugin
+All OCI tasks inherit credentials and connection properties from `AbstractOciTask`. You can configure authentication details directly on tasks or pass them via flow variables and Kestra secrets:
 
-1. Rename the package `io.kestra.plugin.oci` to your own, for example `io.kestra.plugin.myservice`.
-2. Update `group`, `name`, `title`, and `description` in `src/main/resources/metadata/index.yaml`.
-3. Replace `src/main/resources/icons/plugin-icon.svg` with your service's icon.
-4. Replace the `Example` and `Trigger` classes with your real tasks and triggers.
-5. Replace this how-to with documentation for your plugin.
+- `region`: The OCI region identifier (e.g. `eu-frankfurt-1`, `us-ashburn-1`).
+- `tenancyOcid`: The OCID of your OCI tenancy (`ocid1.tenancy.oc1..`).
+- `userId`: The OCID of the calling user (`ocid1.user.oc1..`).
+- `fingerprint`: Fingerprint for the RSA key pair uploaded to your OCI user account.
+- `privateKey`: The RSA private key in PEM format. Always stored as a secret in Kestra.
+- `passphrase`: Optional passphrase used to decrypt the private key if encrypted.
 
-Run `./gradlew lintPluginDocs` before pushing to validate the plugin documentation.
+Example authentication block:
+
+```yaml
+tasks:
+  - id: sample_task
+    type: io.kestra.plugin.oci.ons.PublishMessage
+    region: eu-frankfurt-1
+    tenancyOcid: "{{ secret('OCI_TENANCY_OCID') }}"
+    userId: "{{ secret('OCI_USER_OCID') }}"
+    fingerprint: "{{ secret('OCI_FINGERPRINT') }}"
+    privateKey: "{{ secret('OCI_PRIVATE_KEY') }}"
+```
+
+## Available Tasks
+
+The `io.kestra.plugin.oci.ons` sub-plugin provides six tasks to manage topics, configure subscriptions, and publish messages:
+
+1. `PublishMessage`: Publishes messages with optional title and body to an OCI notification topic.
+2. `CreateTopic`: Creates a new notification topic in a compartment.
+3. `ListTopics`: Lists topics within a compartment with automatic multi-page pagination.
+4. `DeleteTopic`: Deletes a topic by OCID.
+5. `CreateSubscription`: Subscribes an endpoint (HTTPS, Slack, PagerDuty, email, SMS) to a topic.
+6. `DeleteSubscription`: Unsubscribes an endpoint by subscription ID.
